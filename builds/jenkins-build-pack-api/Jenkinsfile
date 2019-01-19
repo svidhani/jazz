@@ -241,7 +241,7 @@ node() {
 					sh "serverless deploy --stage ${environment_logical_id} -v --bucket ${configLoader.AWS.S3[envBucketKey]}"
 
 					def lambdaARN = getLambdaARN(stackName, credsId);
-					events.sendCompletedEvent('CREATE_ASSET', null, utilModule.generateAssetMap("aws", lambdaARN, "lambda", config), environment_logical_id);
+					events.sendCompletedEvent('CREATE_ASSET', null, utilModule.generateAssetMap("aws", lambdaARN.arn, "lambda", config), environment_logical_id);
 
 					if (fileExists('swagger/swagger.json')) {
 						echo "Generating swagger file for environment: ${env_key}"
@@ -376,7 +376,18 @@ def getLambdaARN(stackName, credsId) {
 		error ex.getMessage();
 	}
 
-	return ARN;
+  def tokens = ARN.split(':')
+  def version
+  def alias
+  if (tokens[7].substring(0,1).isNumber()) {
+      version = tokens[7]
+      alias = ""
+  } else {
+      version = ""
+      alias = tokens[7]
+  }
+
+  return [ arn: ARN, region: tokens[3], accountId: tokens[4], functionName: tokens[6], version: version, alias: alias ]
 }
 
 /**
@@ -1040,7 +1051,7 @@ def loadBuildModules(buildModuleUrl){
 		sonarModule = load "sonar-module.groovy"
 		echo "Sonar module loaded successfully."
 
-		if (configLoader.APIGEE && configLoader.APIGEE.ENABLED) {
+		if (configLoader.APIGEE && configLoader.APIGEE.ENABLE_APIGEE) {
 			apigeeModule = load "apigee-module.groovy"
 			apigeeModule.initialize(configLoader.APIGEE, events)
 			echo "Apigee module loaded successfully."
