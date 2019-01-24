@@ -19,7 +19,6 @@ import groovy.transform.Field
 @Field def serviceMetadataLoader
 @Field def utilModule
 @Field def awsAPIGatewayModule
-@Field def awsLambdaModule
 @Field def environmentDeploymentMetadata
 @Field def sonarModule
 
@@ -1026,9 +1025,6 @@ def loadBuildModules(buildModuleUrl){
 		awsAPIGatewayModule = load "aws-apigateway-module.groovy"
 		awsAPIGatewayModule.initialize()
 		echo "AWS APIGateway module loaded successfully."
-
-		awsLambdaModule = load "aws-lambda-module.groovy"
-		echo "AWS Lambda module loaded successfully."
 
 		scmModule = load "scm-module.groovy"
 		scmModule.initialize(configLoader)
